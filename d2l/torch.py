@@ -50,7 +50,8 @@ d2l.DATA_HUB['hotdog']=(d2l.DATA_URL+'hotdog.zip','fba480ffa8aa7e0febbb511d18140
 d2l.DATA_HUB['cifar10_tiny']=(d2l.DATA_URL+'kaggle_cifar10_tiny.zip','2068874e4b9a9f0fb07ebe0ad2b29754449ccacd')
 d2l.DATA_HUB['dog_tiny']=(d2l.DATA_URL+'kaggle_dog_tiny.zip','0cb91d09b814ecdc07b50f31f8dcad3e81d6a86d')
 
-# Part 01: 实用类
+
+# Part 01: 图像绘制与实用类
 
 class Timer:
     """记录多次运行时间"""
@@ -89,9 +90,6 @@ class Accumulator:
         self.data=[0.0]*len(self.data)
     def __getitem__(self,idx):
         return self.data[idx]
-
-
-# Part 02: 图像绘制
 
 def use_svg_display():
     """使用svg格式在Jupyter中显示绘图"""
@@ -177,7 +175,7 @@ class Animator:
         display.clear_output(wait=True)
 
 
-# Part 03: 线性神经网络训练
+# Part 02: 线性神经网络训练
 
 def synthetic_data(w,b,num_examples):
     """生成y=Xw+b+噪声"""
@@ -306,7 +304,7 @@ def predict_ch3(net,test_iter,n=6):
     d2l.show_images(X[0:n].reshape((n,28,28)),1,n,titles=titles[0:n])
 
 
-# Part 04: 多层感知机
+# Part 03: 多层感知机
 
 def evaluate_loss(net,data_iter,loss):
     """评估给定数据集上模型的损失"""
@@ -360,7 +358,7 @@ def download_all():
         download(name)
 
 
-# Part 05: 卷积神经网络训练(GPU)
+# Part 04: 卷积神经网络训练(GPU)
 
 def try_gpu(i=0):
     """如果存在,则返回gpu(i),否则返回cpu()"""
@@ -455,7 +453,7 @@ class Residual(nn.Module):
         return F.relu(Y)
 
 
-# Part 06: 计算性能
+# Part 05: 计算性能
 
 class Benchmark:
     """用于测量运行时间"""
@@ -467,8 +465,10 @@ class Benchmark:
     def __exit__(self,*args):
         print(f'{self.description}: {self.timer.stop():.4f} sec')
 
-
-# Part 07: 计算机视觉
+def split_batch(X,y,devices):
+    """将X和y拆分到多个设备上"""
+    assert X.shape[0]==y.shape[0]
+    return (nn.parallel.scatter(X,devices),nn.parallel.scatter(y,devices))
 
 def resnet18(num_classes,in_channels=1):
     """稍加修改的ResNet-18模型"""
@@ -493,6 +493,9 @@ def resnet18(num_classes,in_channels=1):
     net.add_module("global_avg_pool",nn.AdaptiveAvgPool2d((1,1)))
     net.add_module("fc",nn.Sequential(nn.Flatten(),nn.Linear(512,num_classes)))
     return net
+
+
+# Part 06: 计算机视觉
 
 def train_batch_ch13(net,X,y,loss,trainer,devices):
     """用多GPU进行小批量训练"""
